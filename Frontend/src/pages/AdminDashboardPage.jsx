@@ -18,6 +18,10 @@ function StatCard({ label, value }) {
 }
 
 const API_ROOT = (import.meta.env.VITE_API_URL || 'http://localhost:6000/api').replace(/\/api$/, '');
+const resolveProofUrl = (proofUrl) =>
+  proofUrl?.startsWith('http://') || proofUrl?.startsWith('https://')
+    ? proofUrl
+    : `${API_ROOT}${proofUrl}`;
 
 const emptyCharityForm = {
   name: '',
@@ -421,7 +425,7 @@ export default function AdminDashboardPage() {
                     </div>
                     {winner.proofUrl && (
                       <a
-                        href={`${API_ROOT}${winner.proofUrl}`}
+                        href={resolveProofUrl(winner.proofUrl)}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-block mt-2 text-xs text-cyan-300 hover:text-cyan-200"
