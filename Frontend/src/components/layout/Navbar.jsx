@@ -197,6 +197,15 @@ export default function Navbar() {
                   </button>
                   <button
                     onClick={() => {
+                      setShowAdminLoginForm(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left text-sm font-bold tracking-[0.25em] text-amber-300 uppercase hover:text-amber-400 transition-colors"
+                  >
+                    Admin
+                  </button>
+                  <button
+                    onClick={() => {
                       navigate('subscribe');
                       setIsMobileMenuOpen(false);
                     }}
@@ -207,14 +216,35 @@ export default function Navbar() {
                 </>
               )}
               {isLoggedIn && (
-                <button
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="block w-full text-left text-sm font-bold tracking-[0.25em] text-white/40 uppercase hover:text-cyan-400 transition-colors"
-                >
-                  Account
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      openScoreEntry();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left text-sm font-bold tracking-[0.25em] text-cyan-400 uppercase hover:text-cyan-300 transition-colors"
+                  >
+                    Add Score
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate(isAdmin ? 'admin' : 'dashboard');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left text-sm font-bold tracking-[0.25em] text-white/40 uppercase hover:text-cyan-400 transition-colors"
+                  >
+                    {isAdmin ? 'Admin' : 'Dashboard'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left text-sm font-bold tracking-[0.25em] text-red-400 uppercase hover:text-red-300 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </>
               )}
             </div>
           </motion.div>
