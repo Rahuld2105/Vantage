@@ -1,5 +1,25 @@
 import mongoose from 'mongoose';
 
+const verificationEventSchema = new mongoose.Schema(
+  {
+    action: {
+      type: String,
+      enum: ['proof_uploaded', 'approved', 'rejected', 'paid'],
+      required: true,
+    },
+    at: {
+      type: Date,
+      default: Date.now,
+    },
+    byUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    notes: String,
+  },
+  { _id: false }
+);
+
 const winnerSchema = new mongoose.Schema(
   {
     drawId: {
@@ -23,13 +43,24 @@ const winnerSchema = new mongoose.Schema(
       min: 0,
     },
     proofUrl: String,
+    proofUploadedAt: Date,
     paymentStatus: {
       type: String,
       enum: ['pending', 'approved', 'rejected', 'paid'],
       default: 'pending',
     },
+    approvedAt: Date,
+    rejectedAt: Date,
     paidAt: Date,
+    verifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
     adminNotes: String,
+    verificationHistory: {
+      type: [verificationEventSchema],
+      default: [],
+    },
   },
   { timestamps: true }
 );

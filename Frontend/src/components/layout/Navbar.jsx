@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { LogOut, PlusCircle, Zap } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { LogOut, PlusCircle, Zap, Menu, X } from 'lucide-react';
 import { useApp } from '../../Context/AppContext';
 import { NAV_LINKS } from '../../data/constants';
 import LoginForm from '../auth/LoginForm';
@@ -12,6 +12,7 @@ export default function Navbar() {
   const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [showAdminLoginForm, setShowAdminLoginForm] = useState(false);
   const [loginPrompt, setLoginPrompt] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const openScoreEntry = () => {
     if (!isLoggedIn) {
@@ -70,16 +71,32 @@ export default function Navbar() {
             </button>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 md:hidden ml-auto">
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate('subscribe')}
+              className="rounded-full bg-white px-3 py-2 text-[9px] font-black tracking-widest text-black transition-all hover:bg-cyan-400"
+            >
+              JOIN
+            </motion.button>
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 text-white/70 hover:text-white"
+            >
+              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+
+          <div className="hidden md:flex items-center gap-2 sm:gap-3">
             <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
               onClick={openScoreEntry}
-              className="flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-[10px] font-black tracking-[0.22em] text-cyan-400 transition-all hover:bg-cyan-500/20 sm:px-5"
+              className="flex items-center gap-2 whitespace-nowrap rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 md:px-5 py-2 text-[9px] sm:text-[10px] font-black tracking-widest text-cyan-400 transition-all hover:bg-cyan-500/20"
             >
               <PlusCircle size={12} />
-              <span className="hidden sm:inline">ADD SCORE</span>
-              <span className="sm:hidden">SCORE</span>
+              <span>ADD SCORE</span>
             </motion.button>
 
             {isLoggedIn && user ? (
@@ -88,15 +105,15 @@ export default function Navbar() {
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => navigate(isAdmin ? 'admin' : 'dashboard')}
-                  className="hidden rounded-full border border-cyan-500/30 bg-cyan-500/10 px-5 py-2 text-[10px] font-black tracking-widest text-cyan-400 transition-all hover:bg-cyan-500/20 md:block"
+                  className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 sm:px-5 py-2 text-[9px] sm:text-[10px] font-black tracking-widest text-cyan-400 transition-all hover:bg-cyan-500/20"
                 >
-                  {isAdmin ? 'ADMIN PANEL' : user.name}
+                  {isAdmin ? 'ADMIN' : user.name.length > 8 ? user.name.substring(0, 8) + '...' : user.name}
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={logout}
-                  className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-[10px] font-black tracking-widest text-white transition-all hover:bg-red-500/20 hover:text-red-400 sm:px-5"
+                  className="flex items-center gap-1 sm:gap-2 rounded-full border border-white/10 bg-white/10 px-2 sm:px-4 md:px-5 py-2 text-[9px] sm:text-[10px] font-black tracking-widest text-white transition-all hover:bg-red-500/20 hover:text-red-400"
                 >
                   <LogOut size={12} />
                   <span className="hidden sm:inline">LOGOUT</span>
@@ -108,23 +125,25 @@ export default function Navbar() {
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => setShowAdminLoginForm(true)}
-                  className="rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-[10px] font-black tracking-widest text-amber-300 transition-all hover:bg-amber-500/20 sm:px-5"
+                  className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 sm:px-4 md:px-5 py-2 text-[9px] sm:text-[10px] font-black tracking-widest text-amber-300 transition-all hover:bg-amber-500/20"
                 >
-                  ADMIN
+                  <span className="hidden sm:inline">ADMIN</span>
+                  <span className="sm:hidden">ADM</span>
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={openLogin}
-                  className="hidden rounded-full border border-cyan-500/30 bg-cyan-500/10 px-5 py-2 text-[10px] font-black tracking-widest text-cyan-400 transition-all hover:bg-cyan-500/20 md:block"
+                  className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 sm:px-4 md:px-5 py-2 text-[9px] sm:text-[10px] font-black tracking-widest text-cyan-400 transition-all hover:bg-cyan-500/20"
                 >
-                  SIGN IN
+                  <span className="hidden sm:inline">SIGN IN</span>
+                  <span className="sm:hidden">IN</span>
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => navigate('subscribe')}
-                  className="rounded-full bg-white px-4 py-2 text-[10px] font-black tracking-widest text-black transition-all hover:bg-cyan-400 sm:px-5"
+                  className="hidden md:inline rounded-full bg-white px-3 md:px-5 py-2 text-[9px] sm:text-[10px] font-black tracking-widest text-black transition-all hover:bg-cyan-400"
                 >
                   JOIN NOW
                 </motion.button>
@@ -133,6 +152,74 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-[#020203]/95 backdrop-blur-2xl border-b border-white/5"
+          >
+            <div className="px-4 py-4 space-y-4">
+              {NAV_LINKS.map((link) => (
+                <button
+                  key={link.anchor}
+                  onClick={() => {
+                    navigate('home', link.anchor);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="block w-full text-left text-sm font-bold tracking-[0.25em] text-white/40 uppercase hover:text-cyan-400 transition-colors"
+                >
+                  {link.label}
+                </button>
+              ))}
+              <button
+                onClick={() => {
+                  navigate('charities');
+                  setIsMobileMenuOpen(false);
+                }}
+                className="block w-full text-left text-sm font-bold tracking-[0.25em] text-white/40 uppercase hover:text-cyan-400 transition-colors"
+              >
+                Charities
+              </button>
+              {!isLoggedIn && (
+                <>
+                  <button
+                    onClick={() => {
+                      openLogin();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left text-sm font-bold tracking-[0.25em] text-white/40 uppercase hover:text-cyan-400 transition-colors"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('subscribe');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left text-sm font-bold tracking-[0.25em] text-white/40 uppercase hover:text-cyan-400 transition-colors"
+                  >
+                    Join Now
+                  </button>
+                </>
+              )}
+              {isLoggedIn && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="block w-full text-left text-sm font-bold tracking-[0.25em] text-white/40 uppercase hover:text-cyan-400 transition-colors"
+                >
+                  Account
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {showLoginForm && (
         <LoginForm

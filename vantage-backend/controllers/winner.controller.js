@@ -1,5 +1,6 @@
 import * as winnerService from '../services/winner.service.js';
 import { success, error } from '../utils/apiResponse.js';
+import { buildUploadUrl } from '../utils/storage.js';
 
 export const getMyWinnings = async (req, res, next) => {
   try {
@@ -20,7 +21,10 @@ export const uploadProof = async (req, res, next) => {
     
     const filePath = `/uploads/proofs/${req.file.filename}`;
     const winner = await winnerService.uploadProof(winnerId, req.user._id, filePath);
-    success(res, winner, 'Proof uploaded');
+    success(res, {
+      ...winner.toObject(),
+      proofUrl: buildUploadUrl(filePath),
+    }, 'Proof uploaded');
   } catch (err) {
     error(res, err.message || 'Failed to upload proof', err.statusCode || 500);
   }

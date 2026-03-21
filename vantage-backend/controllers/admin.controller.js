@@ -243,7 +243,11 @@ export const verifyWinner = async (req, res, next) => {
     const { winnerId } = req.params;
     const { action, adminNotes } = req.body;
 
-    const winner = await winnerService.verifyWinner(winnerId, { action, adminNotes });
+    const winner = await winnerService.verifyWinner(winnerId, {
+      action,
+      adminNotes,
+      adminUserId: req.user._id,
+    });
     success(res, winner, 'Winner verified');
   } catch (err) {
     error(res, err.message || 'Failed to verify winner', err.statusCode || 500);

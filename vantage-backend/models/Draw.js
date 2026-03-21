@@ -10,9 +10,9 @@ const drawSchema = new mongoose.Schema(
     },
     numbers: {
       type: [Number],
-      required: [true, 'Draw numbers are required'],
+      required: function() { return this.status !== 'draft'; },
       validate: {
-        validator: (v) => v.length === 5,
+        validator: function(v) { return this.status === 'draft' || v.length === 5; },
         message: 'Must contain exactly 5 numbers',
       },
     },

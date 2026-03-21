@@ -12,6 +12,16 @@ export const getByUser = async (userId) => {
   if (!subscription) {
     throw { statusCode: 404, message: 'Subscription not found' };
   }
+
+  if (
+    subscription.status === 'active' &&
+    subscription.currentPeriodEnd &&
+    new Date(subscription.currentPeriodEnd) < new Date()
+  ) {
+    subscription.status = subscription.cancelAtPeriodEnd ? 'cancelled' : 'inactive';
+    await subscription.save();
+  }
+
   return subscription;
 };
 

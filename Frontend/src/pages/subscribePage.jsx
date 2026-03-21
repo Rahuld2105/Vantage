@@ -6,6 +6,7 @@ import PlanSelector from '../components/subscribe/PlanSelector';
 import CharitySelector from '../components/subscribe/CharitySelector';
 import Footer from '../components/layout/Footer';
 import { PLANS } from '../data/plans';
+import { CHARITIES as FALLBACK_CHARITIES } from '../data/charities';
 import { charityAPI, subscriptionAPI } from '../services/api';
 import { useApp } from '../Context/AppContext';
 
@@ -109,14 +110,21 @@ export default function SubscribePage() {
         if (nextCharities.length) {
           applyCharityOptions(nextCharities);
         } else {
+          // fallback to built-in seed data if backend returns empty list
+          applyCharityOptions(FALLBACK_CHARITIES);
+          setFormError('No charities from backend, using internal defaults.');
+        }
+      } catch (err) {
+        console.error('Charity load failed:', err);
+        const fallback = FALLBACK_CHARITIES;
+        if (fallback.length) {
+          applyCharityOptions(fallback);
+          setFormError('Unable to load charities from server; using local defaults.');
+        } else {
           setCharities([]);
           setCharity(null);
-          setFormError('No charities are available right now. Please try again shortly.');
+          setFormError('Unable to load charities right now. Please try again shortly.');
         }
-      } catch {
-        setCharities([]);
-        setCharity(null);
-        setFormError('Unable to load charities right now. Please try again shortly.');
       } finally {
         setCharityLoading(false);
       }
@@ -219,17 +227,19 @@ export default function SubscribePage() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-          {JOURNEY_NOTES.map((item) => (
-            <div key={item.title} className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4 sm:p-5">
-              <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-4">
-                <item.icon size={18} className="text-cyan-400" />
+        {step === 1 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+            {JOURNEY_NOTES.map((item) => (
+              <div key={item.title} className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+                <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-4">
+                  <item.icon size={18} className="text-cyan-400" />
+                </div>
+                <h3 className="text-sm font-black text-white mb-2">{item.title}</h3>
+                <p className="text-xs text-white/45 leading-relaxed">{item.desc}</p>
               </div>
-              <h3 className="text-sm font-black text-white mb-2">{item.title}</h3>
-              <p className="text-xs text-white/45 leading-relaxed">{item.desc}</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="rounded-[24px] sm:rounded-[28px] border border-white/10 bg-[#080a0d] p-4 sm:p-6 md:p-8">
           <StepIndicator currentStep={step} />
