@@ -60,20 +60,7 @@ const isAllowedDevOrigin = (origin) => {
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
-app.use(cors({
-  origin(origin, callback) {
-    if (
-      !origin ||
-      configuredOrigins.includes(origin) ||
-      isAllowedDevOrigin(origin)
-    ) {
-      return callback(null, true);
-    }
-
-    return callback(new Error(`CORS blocked for origin: ${origin}`));
-  },
-  credentials: true,
-}));
+app.use(cors());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({
