@@ -37,6 +37,8 @@ export const isAllowedBrowserOrigin = (origin) => {
   const normalizedOrigin = normalizeOrigin(origin);
   if (!normalizedOrigin) return false;
 
+  const parsedOrigin = new URL(normalizedOrigin);
+
   if (getConfiguredOrigins().includes(normalizedOrigin)) {
     return true;
   }
@@ -45,7 +47,17 @@ export const isAllowedBrowserOrigin = (origin) => {
     return isLocalOrigin(normalizedOrigin);
   }
 
-  return new URL(normalizedOrigin).protocol === 'https:';
+  if (parsedOrigin.protocol !== 'https:') {
+    return false;
+  }
+
+  // Allow Vercel deployment domains so production and preview URLs
+  // can talk to the backend without manual CORS updates each time.
+  if (parsedOrigin.hostname.endsWith('.vercel.app')) {
+    return true;
+  }
+
+  return false;
 };
 
 export const resolvePublicAppUrl = (candidateOrigin) => {
