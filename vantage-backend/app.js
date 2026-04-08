@@ -57,7 +57,10 @@ app.use(cors({
       return callback(null, true);
     }
 
-    return callback(new Error('Origin not allowed by CORS'));
+    return callback({
+      statusCode: 403,
+      message: `Origin not allowed by CORS: ${origin || 'unknown origin'}`,
+    });
   },
   credentials: true,
 }));
