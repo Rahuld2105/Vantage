@@ -13,6 +13,7 @@ export const createCheckout = async (req, res, next) => {
       charityId,
       charityPercent,
       email: req.user.email,
+      origin: req.get('origin') || req.get('referer'),
     });
     
     success(res, { sessionId: session.id, url: session.url }, 'Checkout session created');

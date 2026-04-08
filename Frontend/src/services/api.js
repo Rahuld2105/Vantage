@@ -1,4 +1,4 @@
-const configuredApiUrl = import.meta.env.VITE_API_URL;
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
 const isDev = import.meta.env.DEV;
 
 const DEFAULT_API_BASES = isDev
@@ -12,6 +12,21 @@ const FALLBACK_API_BASES = configuredApiUrl
     : [];
 
 const API_BASES = [...new Set([...DEFAULT_API_BASES, ...FALLBACK_API_BASES])];
+
+const getPrimaryApiBase = () => API_BASES[0] || '/api';
+
+export const resolveBackendUrl = (path = '') => {
+  if (!path) {
+    return new URL(getPrimaryApiBase(), window.location.origin).toString();
+  }
+
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+
+  const backendOrigin = new URL(getPrimaryApiBase(), window.location.origin).origin;
+  return new URL(path, backendOrigin).toString();
+};
 
 const getHeaders = () => {
   const token = localStorage.getItem('token');

@@ -1,12 +1,15 @@
 import stripe, { getPriceId } from '../config/stripe.js';
 import Subscription from '../models/Subscription.js';
 import User from '../models/User.js';
+import { resolvePublicAppUrl } from '../utils/origin.js';
 
-export const createCheckoutSession = async ({ userId, plan, billing, charityId, charityPercent, email }) => {
+export const createCheckoutSession = async ({ userId, plan, billing, charityId, charityPercent, email, origin }) => {
   const priceId = getPriceId(plan, billing);
   if (!priceId) {
     throw { statusCode: 400, message: 'Invalid plan or billing option' };
   }
+
+  const appUrl = resolvePublicAppUrl(origin);
   
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
@@ -18,8 +21,8 @@ export const createCheckoutSession = async ({ userId, plan, billing, charityId, 
         quantity: 1,
       },
     ],
-    success_url: `${process.env.CLIENT_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.CLIENT_URL}/subscribe`,
+    success_url: `${appUrl}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appUrl}/subscribe`,
     metadata: {
       userId: userId.toString(),
       plan: plan.toString(),

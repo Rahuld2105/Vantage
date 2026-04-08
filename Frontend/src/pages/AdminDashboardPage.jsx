@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { adminAPI, charityAPI, drawAPI } from '../services/api';
+import { adminAPI, charityAPI, drawAPI, resolveBackendUrl } from '../services/api';
 import { useApp } from '../Context/AppContext';
 import Footer from '../components/layout/Footer';
 
@@ -17,11 +17,7 @@ function StatCard({ label, value }) {
   );
 }
 
-const API_ROOT = (import.meta.env.VITE_API_URL || 'http://localhost:6000/api').replace(/\/api$/, '');
-const resolveProofUrl = (proofUrl) =>
-  proofUrl?.startsWith('http://') || proofUrl?.startsWith('https://')
-    ? proofUrl
-    : `${API_ROOT}${proofUrl}`;
+const resolveProofUrl = (proofUrl) => resolveBackendUrl(proofUrl);
 
 const emptyCharityForm = {
   name: '',

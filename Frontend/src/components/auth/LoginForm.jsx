@@ -1,39 +1,48 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { X, Mail, Lock } from 'lucide-react';
-import { useApp } from '../../Context/AppContext';
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { X, Mail, Lock } from "lucide-react";
+import { useApp } from "../../Context/AppContext";
 
-export default function LoginForm({ onClose, onSwitchToRegister, mode = 'user', introMessage = '' }) {
+export default function LoginForm({
+  onClose,
+  onSwitchToRegister,
+  mode = "user",
+  introMessage = "",
+}) {
   const { login, error, clearError, loading, navigate } = useApp();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [formError, setFormError] = useState('');
-  const isAdminMode = mode === 'admin';
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validationSchema: Yup.object({
+      email: Yup.string().email("Invalid Email").required("Email is required"),
+      password: Yup.string()
+        .min(6, "Password should be atleast 6 charaters")
+        .required("Password is required"),
+    }),
+    onSubmit: async (values) => {
+      clearError();
+      setFormError("");
+      try {
+        const result = await login(values.email, values.password);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setFormError('');
-    clearError();
+        if (isAdminMode && result.user?.role !== "admin") {
+          setFormError("This account doesnt have admin access");
+          return;
+        }
 
-    if (!email || !password) {
-      setFormError('Email and password are required');
-      return;
-    }
-
-    try {
-      const result = await login(email, password);
-
-      if (isAdminMode && result.user?.role !== 'admin') {
-        setFormError('This account does not have admin access');
-        return;
+        onClose();
+        navigate(result.user?.role === "admin" ? "admin" : "dashboard");
+      } catch (err) {
+        setFormError(err.message||"Login failed");
       }
-
-      onClose();
-      navigate(result.user?.role === 'admin' ? 'admin' : 'dashboard');
-    } catch (err) {
-      setFormError(err.message);
-    }
-  };
+    },
+  });
+  const [formError, setFormError] = useState("");
+  const isAdminMode = mode === "admin";
 
   const displayError = formError || error || introMessage;
 
@@ -48,12 +57,12 @@ export default function LoginForm({ onClose, onSwitchToRegister, mode = 'user', 
         <div className="flex justify-between items-start mb-8">
           <div>
             <h2 className="text-2xl font-black text-white">
-              {isAdminMode ? 'Admin Sign In' : 'Sign In'}
+              {isAdminMode ? "Admin Sign In" : "Sign In"}
             </h2>
             <p className="text-xs text-white/40 mt-2">
               {isAdminMode
-                ? 'Use an admin account to open the control panel'
-                : 'Welcome back to Vantage Impact'}
+                ? "Use an admin account to open the control panel"
+                : "Welcome back to Vantage Impact"}
             </p>
           </div>
           <button
@@ -65,7 +74,7 @@ export default function LoginForm({ onClose, onSwitchToRegister, mode = 'user', 
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={formik.handleSubmit} className="space-y-4">
           {/* Error Banner */}
           {displayError && (
             <motion.div
@@ -89,14 +98,18 @@ export default function LoginForm({ onClose, onSwitchToRegister, mode = 'user', 
               />
               <input
                 type="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setFormError('');
-                }}
+                name="email"
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 placeholder="your@email.com"
                 className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500 transition-all"
               />
+              {formik.touched.email && formik.errors.email && (
+                <p className="text-red-400 text-xs mt-1">
+                  {formik.errors.email}
+                </p>
+              )}
             </div>
           </div>
 
@@ -112,24 +125,28 @@ export default function LoginForm({ onClose, onSwitchToRegister, mode = 'user', 
               />
               <input
                 type="password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setFormError('');
-                }}
+                name="password"
+                value={formik.values.password}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 placeholder="Enter your password"
                 className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-cyan-500 transition-all"
               />
+              {formik.touched.password && formik.errors.password && (
+                <p className="text-red-400 text-xs mt-1">
+                  {formik.errors.password}
+                </p>
+              )}
             </div>
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading||!formik.isValid}
             className="w-full mt-6 py-3 bg-cyan-500 text-black font-black text-xs tracking-widest rounded-xl hover:bg-cyan-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'SIGNING IN...' : 'SIGN IN'}
+            {loading ? "SIGNING IN..." : "SIGN IN"}
           </button>
         </form>
 
@@ -141,12 +158,11 @@ export default function LoginForm({ onClose, onSwitchToRegister, mode = 'user', 
             </p>
           ) : (
             <p className="text-xs text-white/40">
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <button
                 onClick={() => {
-                  setEmail('');
-                  setPassword('');
-                  setFormError('');
+                  formik.resetForm();
+                  setFormError("");
                   onSwitchToRegister();
                 }}
                 className="text-cyan-400 hover:text-cyan-300 font-bold transition-colors"

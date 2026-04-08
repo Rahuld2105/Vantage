@@ -6,6 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { rateLimiter } from './middleware/rateLimiter.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { isAllowedBrowserOrigin } from './utils/origin.js';
 
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
@@ -38,29 +39,19 @@ app.use((req, res, next) => {
   });
 });
 
-const configuredOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
-  .split(',')
-  .map((url) => url.trim())
-  .filter(Boolean);
-
-const isAllowedDevOrigin = (origin) => {
-  if (!origin) return true;
-
-  try {
-    const { hostname, protocol } = new URL(origin);
-    return (
-      protocol === 'http:' &&
-      (hostname === 'localhost' || hostname === '127.0.0.1')
-    );
-  } catch {
-    return false;
-  }
-};
-
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
-app.use(cors());
+app.use(cors({
+  origin(origin, callback) {
+    if (isAllowedBrowserOrigin(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Origin not allowed by CORS'));
+  },
+  credentials: true,
+}));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({
@@ -80,7 +71,7 @@ app.get('/health', (req, res) => {
 app.get('/api', (req, res) => {
   res.json({
     success: true,
-    message: 'API is running 🚀'
+    message: 'API is running',
   });
 });
 app.use('/api/auth', authRoutes);
