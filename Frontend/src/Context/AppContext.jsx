@@ -5,6 +5,11 @@ const AppContext = createContext(null);
 
 const getPageFromLocation = () => {
   const path = window.location.pathname.toLowerCase();
+  const pageParam = new URLSearchParams(window.location.search).get('page')?.toLowerCase();
+
+  if (['dashboard', 'subscribe', 'charities', 'admin', 'home'].includes(pageParam)) {
+    return pageParam;
+  }
 
   if (path.startsWith('/dashboard')) return 'dashboard';
   if (path.startsWith('/subscribe')) return 'subscribe';
