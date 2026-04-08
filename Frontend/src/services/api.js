@@ -61,6 +61,8 @@ const handleResponse = async (res) => {
 };
 
 const request = async (path, options = {}) => {
+  let lastNetworkError = null;
+
   for (const base of API_BASES) {
     for (let attempt = 0; attempt <= NETWORK_RETRY_DELAYS_MS.length; attempt += 1) {
       try {
@@ -72,6 +74,8 @@ const request = async (path, options = {}) => {
           throw err;
         }
 
+        lastNetworkError = err;
+
         if (attempt < NETWORK_RETRY_DELAYS_MS.length) {
           await wait(NETWORK_RETRY_DELAYS_MS[attempt]);
           continue;
@@ -81,9 +85,12 @@ const request = async (path, options = {}) => {
   }
 
   const attemptedBases = API_BASES.join(', ');
+  const networkDetail = lastNetworkError?.message
+    ? ` Network error: ${lastNetworkError.message}`
+    : '';
   throw new Error(
     `Unable to reach the backend. Checked: ${attemptedBases}. ` +
-    `Make sure the backend server is running and VITE_API_URL is correct.`
+    `Make sure the backend server is running and VITE_API_URL is correct.${networkDetail}`
   );
 };
 
