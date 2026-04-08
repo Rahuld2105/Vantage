@@ -28,8 +28,17 @@ app.use((req, res, next) => {
     return next();
   }
 
-  const forwardedProto = req.headers['x-forwarded-proto'];
-  if (req.secure || forwardedProto === 'https') {
+  if (req.path === '/health') {
+    return next();
+  }
+
+  const forwardedProtoHeader = req.headers['x-forwarded-proto'];
+  const forwardedProtocols = `${forwardedProtoHeader || ''}`
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (req.secure || forwardedProtocols.includes('https') || forwardedProtocols.length === 0) {
     return next();
   }
 

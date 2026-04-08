@@ -1,4 +1,6 @@
-const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
+const runtimeConfiguredApiUrl =
+  typeof window !== 'undefined' ? window.__APP_CONFIG__?.API_URL?.trim() : '';
+const configuredApiUrl = runtimeConfiguredApiUrl || import.meta.env.VITE_API_URL?.trim();
 const isDev = import.meta.env.DEV;
 
 const DEFAULT_API_BASES = isDev
