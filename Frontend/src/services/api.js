@@ -14,8 +14,11 @@ const FALLBACK_API_BASES = configuredApiUrl
     : [];
 
 const API_BASES = [...new Set([...DEFAULT_API_BASES, ...FALLBACK_API_BASES])];
+const NETWORK_RETRY_DELAYS_MS = [800, 1500];
 
 const getPrimaryApiBase = () => API_BASES[0] || '/api';
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const resolveBackendUrl = (path = '') => {
   if (!path) {
@@ -59,16 +62,21 @@ const handleResponse = async (res) => {
 
 const request = async (path, options = {}) => {
   for (const base of API_BASES) {
-    try {
-      const res = await fetch(`${base}${path}`, options);
-      return await handleResponse(res);
-    } catch (err) {
-      // Only retry alternative bases for network-level failures.
-      if (err instanceof TypeError) {
-        continue;
-      }
+    for (let attempt = 0; attempt <= NETWORK_RETRY_DELAYS_MS.length; attempt += 1) {
+      try {
+        const res = await fetch(`${base}${path}`, options);
+        return await handleResponse(res);
+      } catch (err) {
+        // Retry network-level failures to tolerate Render cold starts.
+        if (!(err instanceof TypeError)) {
+          throw err;
+        }
 
-      throw err;
+        if (attempt < NETWORK_RETRY_DELAYS_MS.length) {
+          await wait(NETWORK_RETRY_DELAYS_MS[attempt]);
+          continue;
+        }
+      }
     }
   }
 
